@@ -1,0 +1,6 @@
+.idea/
+cs5421backendapi/__pycache__/
+venv/
+api_app/migrations/__pycache__/
+api_app/__pycache__/
+.env
