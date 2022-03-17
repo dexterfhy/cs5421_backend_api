@@ -47,7 +47,7 @@ All `200 OK` responses will return:
 Error responses will return:
 ```
 {
-    "status": "success",
+    "status": "error",
     "mesage": "Some error message"
 }
 ```
