@@ -32,6 +32,11 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+To run:
+```
+python manage.py runserver
+```
+
 ### API Specs
 
 #### Structure
