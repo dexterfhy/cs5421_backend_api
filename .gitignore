@@ -4,3 +4,4 @@ venv/
 api_app/migrations/__pycache__/
 api_app/__pycache__/
 .env
+api_app/migrations/

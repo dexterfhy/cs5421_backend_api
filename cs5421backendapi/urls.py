@@ -20,4 +20,11 @@ from api_app import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.healthcheck),
+    path('register', views.register),
+    path('login', views.login),
+    path('users/<int:user_id>', views.get_user),
+    path('users/<int:user_id>/attempts/<int:attempt_id>', views.get_challenge_attempt),
+    path('challenges', views.fetch_challenges_or_create_new),
+    path('challenges/<int:challenge_id>', views.get_challenge),
+    path('attempts', views.attempt_challenge)
 ]

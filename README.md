@@ -9,14 +9,194 @@ Create a `.env` file with key-value pairs for the following variables:
 - `DB_PASS`
 - `DB_HOST`
 - `DB_PORT`
+- `KAFKA_BOOTSTRAP_SERVERS`
+- `KAFKA_CLIENT_ID`
+- `KAFKA_CONSUMER_GROUP_ID`
+- `KAFKA_JOB_INIT_TOPIC`
+- `KAFKA_JOB_COMPLETION_TOPIC`
 
-### Database
+### Kafka Setup
 
-- Run `migration.sql`
+- Download [Zookeeper](https://zookeeper.apache.org/releases.html) and [Kafka](https://kafka.apache.org/downloads)
+- Start both with `zkserver` and `kafka-server-start`
+- Create topics named under `KAFKA_JOB_INIT_TOPIC` and `KAFKA_JOB_COMPLETION_TOPIC`
+```
+kafka-topics --bootstrap-server <host, usually localhost:9092> --create --replication-factor 1 --partitions 3 --topic=<name>
+```
 
 ### Django Setup
 
 ```
+python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
+```
+
+### API Specs
+
+#### Structure
+
+All `200 OK` responses will return:
+```
+{
+    "status": "success",
+    "data": [...] or {...}
+}
+```
+
+Error responses will return:
+```
+{
+    "status": "success",
+    "mesage": "Some error message"
+}
+```
+
+#### Endpoints
+
+- `POST register` - Creates a new `user`
+```
+{
+    "email": "dexter@gmail.com",
+    "full_name": "Dexter",
+    "unsafe_password": "pass"
+}
+...
+{
+    "status": "success",
+    "data": {
+        "id": 4,
+        "email": "dexter@gmail.com",
+        "full_name": "Dexter",
+        "unsafe_password": "pass",
+        "created_at": "2022-03-17T08:14:05.660810Z"
+    }
+}
+```
+
+- `POST login` - Gets `user` by email and password
+```
+{
+    "email": "dexter@gmail.com",
+    "unsafe_password": "pass"
+}
+...
+{
+    "status": "success",
+    "data": {
+        "id": 3,
+        "email": "dexter@gmail.com",
+        "full_name": "Dexter",
+        "unsafe_password": "pass",
+        "created_at": "2022-03-17T08:13:54.982086Z"
+    }
+}
+```
+
+- `GET users/:user_id` - Gets `user` by user ID
+```
+{
+    "status": "success",
+    "data": {
+        "id": 3,
+        "email": "dexter@gmail.com",
+        "full_name": "Dexter",
+        "unsafe_password": "pass",
+        "created_at": "2022-03-17T08:13:54.982086Z"
+    }
+}
+```
+
+- `GET users/:user_id/attempts/attempt_id` - Gets `attempt` by user ID and attempt ID
+```
+{
+    "status": "success",
+    "data": {
+        "id": 23,
+        "user_id": 3,
+        "challenge_id": 1,
+        "query": "<SELECT ...>",
+        "execution_ms": 100,
+        "score": 100,
+        "created_at": "2022-03-17T08:02:28.411594Z",
+        "status": "COMPLETED"
+    }
+}
+```
+
+- `GET challenges` - Gets all `challenges`
+```
+{
+    "status": "success",
+    "data": [
+        {
+            "id": 1,
+            "name": "Test challenge",
+            "description": "Test description",
+            "type": "FE",
+            "init": "<CREATE DATABASE...>",
+            "created_at": "2022-03-17T00:00:00Z"
+        }
+    ]
+}
+```
+
+- `POST challenges` - Creates a new `challenge`
+```
+{
+    "name": "Fabian Pascal",
+    "description": "Some description", //Optional
+    "type": "FE", //or 'LE' representing fastest/longest execution types
+    "init": "<CREATE/INSERT statements...>"
+}
+...
+{
+    "status": "success",
+    "data": {
+        "id": 2,
+        "name": "Fabian Pascal",
+        "description": "Some description",
+        "type": "FE",
+        "init": "<CREATE/INSERT statements...>",
+        "created_at": "2022-03-17T08:21:21.002851Z"
+    }
+}
+```
+  
+- `GET challenges/:challenge_id` - Gets `challenge` by challenge ID
+```
+{
+    "status": "success",
+    "data": {
+        "id": 2,
+        "name": "Fabian Pascal",
+        "description": "Some description",
+        "type": "FE",
+        "init": "<CREATE/INSERT statements...>",
+        "created_at": "2022-03-17T08:21:21.002851Z"
+    }
+}
+```
+
+- `POST attempts` - Creates a new `attempt`
+```
+{
+    "user_id": 1,
+    "challenge_id": 1,
+    "query": "<SELECT statements...>"
+}
+...
+{
+    "status": "success",
+    "data": {
+        "id": 24,
+        "user_id": 1,
+        "challenge_id": 1,
+        "query": "<SELECT statements...>",
+        "execution_ms": null,
+        "score": null,
+        "created_at": "2022-03-17T08:22:08.687418Z",
+        "status": "PENDING"
+    }
+}
 ```
