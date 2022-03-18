@@ -37,6 +37,18 @@ To run:
 python manage.py runserver
 ```
 
+### Database Schema
+
+#### Tables 
+
+- Users
+- Challenges
+- TestCases
+- Attempts
+- AttemptedCases
+
+See [relationships](https://drive.google.com/file/d/1Ufm9CTOjZX--RLCklymqB7MUn6zSx5os/view?usp=sharing)
+
 ### API Specs
 
 #### Structure
@@ -120,6 +132,7 @@ Error responses will return:
         "id": 23,
         "user_id": 3,
         "challenge_id": 1,
+        "test_case_id": 2,
         "query": "<SELECT ...>",
         "execution_ms": 100,
         "score": 100,
@@ -136,10 +149,28 @@ Error responses will return:
     "data": [
         {
             "id": 1,
+            "created_user_id": 1,
             "name": "Test challenge",
             "description": "Test description",
             "type": "FE",
             "init": "<CREATE DATABASE...>",
+            "solution": "<SELECT ...>",
+            "test_cases": [
+                {
+                    "id": 1,
+                    "challenge_id": 1,
+                    "data": "<INSERT ...>",
+                    "is_visible": true,
+                    "created_at": "2022-03-17T00:00:00Z"
+                },
+                {
+                    "id": 2,
+                    "challenge_id": 1,
+                    "data": "<INSERT ...>",
+                    "is_visible": false,
+                    "created_at": "2022-03-17T00:00:00Z"
+                }
+            ],
             "created_at": "2022-03-17T00:00:00Z"
         }
     ]
@@ -149,20 +180,34 @@ Error responses will return:
 - `POST challenges` - Creates a new `challenge`
 ```
 {
+    "user_id": 1,
     "name": "Fabian Pascal",
     "description": "Some description", //Optional
     "type": "FE", //or 'LE' representing fastest/longest execution types
-    "init": "<CREATE/INSERT statements...>"
+    "init": "<CREATE DATABASE...>",
+    "solution": "<SELECT ...>",
+    "test_cases": [
+        {
+            "data": "<INSERT ...>",
+            "is_visible": true
+        },
+        {
+            "data": "<INSERT ...>",
+            "is_visible": false
+        }
+    ]
 }
 ...
 {
     "status": "success",
     "data": {
         "id": 2,
+        "created_user_id": 1,
         "name": "Fabian Pascal",
         "description": "Some description",
         "type": "FE",
         "init": "<CREATE/INSERT statements...>",
+        "solution": "<SELECT ...>",
         "created_at": "2022-03-17T08:21:21.002851Z"
     }
 }
@@ -174,10 +219,29 @@ Error responses will return:
     "status": "success",
     "data": {
         "id": 2,
+        "created_user_id": 1,
         "name": "Fabian Pascal",
         "description": "Some description",
         "type": "FE",
         "init": "<CREATE/INSERT statements...>",
+        "solution": "<SELECT ...>",
+        "created_at": "2022-03-17T08:21:21.002851Z"
+    }
+}
+```
+  
+- `GET challenges-by-user/:challenge_id` - Gets `challenge` by user ID
+```
+{
+    "status": "success",
+    "data": {
+        "id": 2,
+        "created_user_id": 1,
+        "name": "Fabian Pascal",
+        "description": "Some description",
+        "type": "FE",
+        "init": "<CREATE/INSERT statements...>",
+        "solution": "<SELECT ...>",
         "created_at": "2022-03-17T08:21:21.002851Z"
     }
 }
@@ -198,10 +262,49 @@ Error responses will return:
         "user_id": 1,
         "challenge_id": 1,
         "query": "<SELECT statements...>",
-        "execution_ms": null,
-        "score": null,
-        "created_at": "2022-03-17T08:22:08.687418Z",
-        "status": "PENDING"
+        "created_at": "2022-03-17T08:22:08.687418Z"
     }
+}
+```
+
+### Job Event Specs
+
+- `JobInitEvent`
+
+```
+{
+    "attempt_id": 1,
+    "user_id": 2,
+    "challenge_id": 3,
+    "query": "<SELECT ...>",
+    "init": "<CREATE DATABASE...>",
+    "solution": "<SELECT ...>",
+    "test_cases": [
+        {
+            "id": 1,
+            "data": "<INSERT ...>",
+            "is_visible": true
+        },
+        {
+            "id": 2,
+            "data": "<INSERT ...>",
+            "is_visible": false
+        }
+    ],
+}
+```
+
+- `JobCompletionEvent`
+
+```
+{
+    "attempt_id": 1,
+    "user_id": 2,
+    "challenge_id": 3,
+    "test_case_id": 2,
+    "status": "COMPLETED", //or 'FAILED'
+    "execution_ms": 100,
+    "score": 100,
+    "error": "Some error message" //optional
 }
 ```

@@ -16,6 +16,7 @@ class Challenge(models.Model):
         LONGEST_EXECUTION = 'LE', _('LONGEST_EXECUTION')
 
     id = models.BigAutoField(primary_key=True)
+    created_user_id = models.PositiveIntegerField()
     name = models.CharField(max_length=255)
     description = models.TextField(null=True)
     type = models.CharField(
@@ -24,10 +25,27 @@ class Challenge(models.Model):
         default=Type.FASTEST_EXECUTION,
     )
     init = models.TextField()
+    solution = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class TestCase(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    challenge_id = models.PositiveIntegerField()
+    data = models.TextField()
+    is_visible = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Attempt(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user_id = models.PositiveIntegerField()
+    challenge_id = models.PositiveIntegerField()
+    query = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class AttemptedCase(models.Model):
     class Status(models.TextChoices):
         PENDING = 'PENDING', _('PENDING')
         COMPLETED = 'COMPLETED', _('COMPLETED')
@@ -35,14 +53,13 @@ class Attempt(models.Model):
         TIMED_OUT = 'TIMED_OUT', _('TIMED_OUT')
 
     id = models.BigAutoField(primary_key=True)
-    user_id = models.PositiveIntegerField()
-    challenge_id = models.PositiveIntegerField()
+    attempt_id = models.PositiveIntegerField()
+    test_case_id = models.PositiveIntegerField()
     status = models.CharField(
         max_length=50,
         choices=Status.choices,
         default=Status.PENDING,
     )
-    query = models.TextField()
     execution_ms = models.PositiveIntegerField(null=True)
     score = models.PositiveIntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)

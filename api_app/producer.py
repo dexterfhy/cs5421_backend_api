@@ -11,11 +11,17 @@ producer = KafkaProducer(
 )
 
 
-def publish_job(attempt, challenge):
+def publish_job(attempt, challenge, test_cases):
     producer.send(job_init_topic, {
         "attempt_id": attempt['id'],
         "user_id": attempt['user_id'],
         "challenge_id": attempt['challenge_id'],
         "query": attempt['query'],
-        "init": challenge.init
+        "init": challenge.init,
+        "solution": challenge.solution,
+        "test_cases": list(map(lambda test_case: {
+            "id": test_case.id,
+            "data": test_case.data,
+            "is_visible": test_case.is_visible
+        }, test_cases))
     })

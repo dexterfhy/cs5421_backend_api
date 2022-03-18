@@ -5,8 +5,8 @@ import threading
 from django.core.exceptions import ObjectDoesNotExist
 from kafka import KafkaConsumer
 
-from api_app.models import Attempt
-from api_app.serializers import AttemptSerializer
+from api_app.models import AttemptedCase
+from api_app.serializers import AttemptedCaseSerializer
 
 job_completion_topic = os.getenv('KAFKA_JOB_COMPLETION_TOPIC')
 consumer = KafkaConsumer(
@@ -22,14 +22,14 @@ def handle_job_completion_events():
     for msg in consumer:
         print("Processing job completion event {0}".format(msg))
         try:
-            attempt = Attempt.objects.get(user_id=msg.value['user_id'], id=msg.value['attempt_id'])
+            attempted_case = AttemptedCase.objects.get(attempt_id=msg.value['attempt_id'], test_case_id=msg.value['test_case_id'])
 
             data = dict({
                 'status': msg.value['status'] if 'status' in msg.value else 'PENDING',
                 'execution_ms': msg.value['execution_ms'] if 'execution_ms' in msg.value else 0,
                 'score': msg.value['score'] if 'score' in msg.value else 0
             })
-            serializer = AttemptSerializer(attempt, data=data, partial=True)
+            serializer = AttemptedCaseSerializer(attempted_case, data=data, partial=True)
 
             if serializer.is_valid():
                 serializer.save()
