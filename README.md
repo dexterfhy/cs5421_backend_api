@@ -136,6 +136,8 @@ Error responses will return:
         "query": "<SELECT ...>",
         "execution_ms": 100,
         "score": 100,
+        "expected_result": "{ some_serialized_JSON_string_of_results TBC YISONG }",
+        "actual_result": "{ some_serialized_JSON_string_of_results TBC YISONG }",
         "created_at": "2022-03-17T08:02:28.411594Z",
         "status": "COMPLETED"
     }
@@ -225,6 +227,22 @@ Error responses will return:
         "type": "FE",
         "init": "<CREATE/INSERT statements...>",
         "solution": "<SELECT ...>",
+        "test_cases": [
+            {
+                "id": 1,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": true,
+                "created_at": "2022-03-17T00:00:00Z"
+            },
+            {
+                "id": 2,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": false,
+                "created_at": "2022-03-17T00:00:00Z"
+            }
+        ],
         "created_at": "2022-03-17T08:21:21.002851Z"
     }
 }
@@ -242,6 +260,22 @@ Error responses will return:
         "type": "FE",
         "init": "<CREATE/INSERT statements...>",
         "solution": "<SELECT ...>",
+        "test_cases": [
+            {
+                "id": 1,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": true,
+                "created_at": "2022-03-17T00:00:00Z"
+            },
+            {
+                "id": 2,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": false,
+                "created_at": "2022-03-17T00:00:00Z"
+            }
+        ],
         "created_at": "2022-03-17T08:21:21.002851Z"
     }
 }
@@ -305,6 +339,8 @@ Error responses will return:
     "status": "COMPLETED", //or 'FAILED'
     "execution_ms": 100,
     "score": 100,
+    "expected_result": "", //JSON serialized string
+    "actual_result": "", //JSON serialized string
     "error": "Some error message" //optional
 }
 ```

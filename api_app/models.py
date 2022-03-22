@@ -62,4 +62,6 @@ class AttemptedCase(models.Model):
     )
     execution_ms = models.PositiveIntegerField(null=True)
     score = models.PositiveIntegerField(null=True)
+    expected_result = models.TextField(null=True)
+    actual_result = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)

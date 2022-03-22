@@ -107,47 +107,13 @@ def fetch_challenges_or_create_new(request):
             return Response({"status": "error", "message": challenge_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["POST"])
-def create_challenge(request):
-    if request.method == 'GET':
-        challenges = list(map(lambda x: build_challenge(ChallengeSerializer(x).data), list(Challenge.objects.all())))
-        return Response({"status": "success", "data": challenges}, status=status.HTTP_200_OK)
-    else:
-        challenge_serializer = ChallengeSerializer(data=dict(
-            {
-                "name": request.data["name"],
-                "description": request.data["description"],
-                "type": request.data["type"],
-                "init": request.data["init"],
-                "solution": request.data["solution"],
-            }
-        ))
-        if challenge_serializer.is_valid():
-            challenge_serializer.save()
-
-            for test_case_request in request.data["test_cases"]:
-                test_case_serializer = TestCaseSerializer(data=dict(
-                    {
-                        "challenge_id": challenge_serializer.data["id"],
-                        "data": test_case_request["data"],
-                        "is_visible": test_case_request["is_visible"]
-                    }
-                ))
-                if test_case_serializer.is_valid():
-                    test_case_serializer.save()
-
-            return Response({"status": "success", "data": build_challenge(challenge_serializer.data)}, status=status.HTTP_200_OK)
-        else:
-            return Response({"status": "error", "message": challenge_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-
 @api_view(["GET"])
 def get_challenge(request, challenge_id=None):
     if challenge_id:
         try:
             challenge = Challenge.objects.get(id=challenge_id)
             serializer = ChallengeSerializer(challenge)
-            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+            return Response({"status": "success", "data": build_challenge(serializer.data)}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "Challenge not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -158,7 +124,7 @@ def get_challenge(request, challenge_id=None):
 def get_challenge_by_user(request, user_id=None):
     if user_id:
         try:
-            challenges = list(map(lambda x: ChallengeSerializer(x).data, Challenge.objects.filter(created_user_id=user_id)))
+            challenges = list(map(lambda x: build_challenge(ChallengeSerializer(x).data), Challenge.objects.filter(created_user_id=user_id)))
             return Response({"status": "success", "data": challenges}, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "Challenge not found"}, status=status.HTTP_404_NOT_FOUND)
