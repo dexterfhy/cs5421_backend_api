@@ -22,7 +22,11 @@ class ChallengeSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     type = serializers.CharField(max_length=2)
     init = serializers.CharField()
+    init_at = serializers.DateTimeField(required=False)
+    init_errors = serializers.CharField(required=False)
+    expires_at = serializers.DateTimeField()
     solution = serializers.CharField()
+    times_to_run = serializers.IntegerField()
     created_at = serializers.DateTimeField(required=False)
 
     class Meta:

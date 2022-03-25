@@ -13,7 +13,7 @@ class User(models.Model):
 class Challenge(models.Model):
     class Type(models.TextChoices):
         FASTEST_EXECUTION = 'FE', _('FASTEST_EXECUTION')
-        LONGEST_EXECUTION = 'LE', _('LONGEST_EXECUTION')
+        SLOWEST_EXECUTION = 'SE', _('SLOWEST_EXECUTION')
 
     id = models.BigAutoField(primary_key=True)
     created_user_id = models.PositiveIntegerField()
@@ -25,7 +25,11 @@ class Challenge(models.Model):
         default=Type.FASTEST_EXECUTION,
     )
     init = models.TextField()
+    init_at = models.DateTimeField(null=True)
+    init_errors = models.TextField(null=True)
+    expires_at = models.DateTimeField()
     solution = models.TextField()
+    times_to_run = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -13,13 +13,16 @@ Create a `.env` file with key-value pairs for the following variables:
 - `KAFKA_CLIENT_ID`
 - `KAFKA_CONSUMER_GROUP_ID`
 - `KAFKA_JOB_INIT_TOPIC`
-- `KAFKA_JOB_COMPLETION_TOPIC`
+- `KAFKA_JOB_ATTEMPT_FAST_TOPIC`
+- `KAFKA_JOB_ATTEMPT_SLOW_TOPIC`
+- `KAFKA_JOB_INIT_COMPLETION_TOPIC`
+- `KAFKA_JOB_ATTEMPT_COMPLETION_TOPIC`
 
 ### Kafka Setup
 
 - Download [Zookeeper](https://zookeeper.apache.org/releases.html) and [Kafka](https://kafka.apache.org/downloads)
 - Start both with `zkserver` and `kafka-server-start`
-- Create topics named under `KAFKA_JOB_INIT_TOPIC` and `KAFKA_JOB_COMPLETION_TOPIC`
+- Create topics named under `KAFKA_JOB_INIT_TOPIC`, `KAFKA_JOB_ATTEMPT_FAST_TOPIC`, `KAFKA_JOB_ATTEMPT_SLOW_TOPIC`, `KAFKA_JOB_INIT_COMPLETION_TOPIC`, and `KAFKA_JOB_ATTEMPT_COMPLETION_TOPIC`
 ```
 kafka-topics --bootstrap-server <host, usually localhost:9092> --create --replication-factor 1 --partitions 3 --topic=<name>
 ```
@@ -156,7 +159,10 @@ Error responses will return:
             "description": "Test description",
             "type": "FE",
             "init": "<CREATE DATABASE...>",
+            "init_at": "2022-03-25T17:30:28.933638Z",
+            "init_errors": null,
             "solution": "<SELECT ...>",
+            "times_to_run": 10,
             "test_cases": [
                 {
                     "id": 1,
@@ -185,9 +191,11 @@ Error responses will return:
     "user_id": 1,
     "name": "Fabian Pascal",
     "description": "Some description", //Optional
-    "type": "FE", //or 'LE' representing fastest/longest execution types
+    "type": "FE", //or 'SE' representing fastest/slowest execution types
     "init": "<CREATE DATABASE...>",
+    "expires_at": "2022-06-01T12:00",
     "solution": "<SELECT ...>",
+    "times_to_run": 10,
     "test_cases": [
         {
             "data": "<INSERT ...>",
@@ -208,8 +216,11 @@ Error responses will return:
         "name": "Fabian Pascal",
         "description": "Some description",
         "type": "FE",
-        "init": "<CREATE/INSERT statements...>",
+        "init": "<CREATE DATABASE...>",
+        "init_at": null,
+        "init_errors": null,
         "solution": "<SELECT ...>",
+        "times_to_run": 10,
         "created_at": "2022-03-17T08:21:21.002851Z"
     }
 }
@@ -225,8 +236,11 @@ Error responses will return:
         "name": "Fabian Pascal",
         "description": "Some description",
         "type": "FE",
-        "init": "<CREATE/INSERT statements...>",
+        "init": "<CREATE DATABASE...>",
+        "init_at": "2022-03-25T17:30:28.933638Z",
+        "init_errors": null,
         "solution": "<SELECT ...>",
+        "times_to_run": 10,
         "test_cases": [
             {
                 "id": 1,
@@ -258,8 +272,11 @@ Error responses will return:
         "name": "Fabian Pascal",
         "description": "Some description",
         "type": "FE",
-        "init": "<CREATE/INSERT statements...>",
+        "init": "<CREATE DATABASE...>",
+        "init_at": "2022-03-25T17:30:28.933638Z",
+        "init_errors": null,
         "solution": "<SELECT ...>",
+        "times_to_run": 10,
         "test_cases": [
             {
                 "id": 1,
@@ -301,18 +318,25 @@ Error responses will return:
 }
 ```
 
+### Kafka Specs
+
+- `backend-api` publishes `JobInitEvent` to `backend-job` via `KAFKA_JOB_INIT_TOPIC`
+- `backend-api` publishes `JobAttemptEvent` --> `backend-job` via `KAFKA_JOB_ATTEMPT_FAST_TOPIC` or `KAFKA_JOB_ATTEMPT_SLOW_TOPIC`
+- `backend-job` publishes `JobInitCompletionEvent` to `backend-api` via `KAFKA_JOB_INIT_COMPLETION_TOPIC`
+- `backend-job` publishes `JobAttemptCompletionEvent` to `backend-api` via `KAFKA_JOB_ATTEMPT_COMPLETION_TOPIC` (for both fast and slow attempts)
+
 ### Job Event Specs
 
 - `JobInitEvent`
 
 ```
 {
-    "attempt_id": 1,
-    "user_id": 2,
     "challenge_id": 3,
-    "query": "<SELECT ...>",
+    "challenge_name": "Fabian Pascal",
     "init": "<CREATE DATABASE...>",
+    "expires_at": "2022-06-01T12:00:00+00:00",
     "solution": "<SELECT ...>",
+    "times_to_run": 10,
     "test_cases": [
         {
             "id": 1,
@@ -328,7 +352,29 @@ Error responses will return:
 }
 ```
 
-- `JobCompletionEvent`
+- `JobAttemptEvent`
+
+```
+{
+    "attempt_id": 1,
+    "user_id": 2,
+    "challenge_id": 3,
+    "challenge_name": "Fabian Pascal",
+    "query": "<SELECT ...>"
+}
+```
+
+- `JobInitCompletionEvent`
+
+```
+{
+    "challenge_id": 3,
+    "status": "COMPLETED", //or 'FAILED'
+    "error": "Some error message" //optional
+}
+```
+
+- `JobAttemptCompletionEvent`
 
 ```
 {

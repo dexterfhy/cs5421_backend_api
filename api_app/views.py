@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import User, Attempt, Challenge, TestCase
-from .producer import publish_job
+from .producer import publish_job_init, publish_job_attempt
 from .serializers import UserSerializer, AttemptSerializer, ChallengeSerializer, TestCaseSerializer, \
     AttemptedCaseSerializer
 
@@ -75,7 +75,9 @@ def get_challenge_attempt(request, user_id=None, attempt_id=None):
 @api_view(["GET", "POST"])
 def fetch_challenges_or_create_new(request):
     if request.method == 'GET':
-        challenges = list(map(lambda x: build_challenge(ChallengeSerializer(x).data), list(Challenge.objects.all())))
+        challenges = list(map(lambda x: build_challenge(ChallengeSerializer(x).data),
+                              filter(lambda x: not x["init_errors"],
+                                     map(lambda x: ChallengeSerializer(x).data, list(Challenge.objects.all())))))
         return Response({"status": "success", "data": challenges}, status=status.HTTP_200_OK)
     else:
         challenge_serializer = ChallengeSerializer(data=dict(
@@ -85,7 +87,9 @@ def fetch_challenges_or_create_new(request):
                 "description": request.data["description"],
                 "type": request.data["type"],
                 "init": request.data["init"],
+                "expires_at": request.data["expires_at"],
                 "solution": request.data["solution"],
+                "times_to_run": request.data["times_to_run"],
             }
         ))
         if challenge_serializer.is_valid():
@@ -102,6 +106,11 @@ def fetch_challenges_or_create_new(request):
                 if test_case_serializer.is_valid():
                     test_case_serializer.save()
 
+            challenge_id = challenge_serializer.data["id"]
+            challenge = Challenge.objects.get(id=challenge_id)
+            test_cases = TestCase.objects.filter(challenge_id=challenge_id)
+
+            publish_job_init(challenge, test_cases)
             return Response({"status": "success", "data": build_challenge(challenge_serializer.data)}, status=status.HTTP_200_OK)
         else:
             return Response({"status": "error", "message": challenge_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -143,6 +152,9 @@ def attempt_challenge(request):
             challenge = Challenge.objects.get(id=challenge_id)
             test_cases = TestCase.objects.filter(challenge_id=challenge_id)
 
+            if not challenge.init_at:
+                return Response({"status": "error", "message": "Challenge is not ready yet."}, status=status.HTTP_400_BAD_REQUEST)
+
             attempt_serializer = AttemptSerializer(data=request.data)
             if attempt_serializer.is_valid():
                 attempt_serializer.save()
@@ -157,7 +169,7 @@ def attempt_challenge(request):
                     if attempted_case_serializer.is_valid():
                         attempted_case_serializer.save()
 
-                publish_job(attempt_serializer.data, challenge, test_cases)
+                publish_job_attempt(attempt_serializer.data, challenge)
                 return Response({"status": "success", "data": attempt_serializer.data}, status=status.HTTP_200_OK)
             else:
                 return Response({"status": "error", "message": attempt_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
