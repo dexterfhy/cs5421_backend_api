@@ -47,7 +47,6 @@ def handle_job_completion_events():
                 data = dict({
                     'status': msg.value['status'] if 'status' in msg.value else 'PENDING',
                     'execution_ms': msg.value['execution_ms'] if 'execution_ms' in msg.value else 0,
-                    'score': msg.value['score'] if 'score' in msg.value else 0,
                     'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}',
                     'actual_result': msg.value['actual_result'] if 'actual_result' in msg.value else '{}'
                 })

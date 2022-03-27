@@ -7,6 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     email = serializers.EmailField()
     full_name = serializers.CharField(max_length=255)
+    role = serializers.CharField(max_length=50)
     unsafe_password = serializers.CharField(max_length=255)
     created_at = serializers.DateTimeField(required=False)
 
@@ -63,7 +64,6 @@ class AttemptedCaseSerializer(serializers.ModelSerializer):
     attempt_id = serializers.IntegerField()
     test_case_id = serializers.IntegerField()
     execution_ms = serializers.IntegerField(required=False)
-    score = serializers.IntegerField(required=False)
     expected_result = serializers.CharField(required=False)
     actual_result = serializers.CharField(required=False)
     created_at = serializers.DateTimeField(required=False)

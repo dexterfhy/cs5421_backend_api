@@ -79,6 +79,7 @@ Error responses will return:
 {
     "email": "dexter@gmail.com",
     "full_name": "Dexter",
+    "role": "PROF", //or 'STUD'
     "unsafe_password": "pass"
 }
 ...
@@ -127,7 +128,7 @@ Error responses will return:
 }
 ```
 
-- `GET users/:user_id/attempts/attempt_id` - Gets `attempt` by user ID and attempt ID
+- `GET users/:user_id/attempts/:attempt_id` - Gets `attempt` by user ID and attempt ID
 ```
 {
     "status": "success",
@@ -135,14 +136,30 @@ Error responses will return:
         "id": 23,
         "user_id": 3,
         "challenge_id": 1,
-        "test_case_id": 2,
-        "query": "<SELECT ...>",
-        "execution_ms": 100,
-        "score": 100,
-        "expected_result": "{ some_serialized_JSON_string_of_results TBC YISONG }",
-        "actual_result": "{ some_serialized_JSON_string_of_results TBC YISONG }",
-        "created_at": "2022-03-17T08:02:28.411594Z",
-        "status": "COMPLETED"
+        "query": "<SELECT statements...>",
+        "created_at": "2022-03-25T09:53:27.764581Z",
+        "attempts": [
+            {
+                "id": 17,
+                "attempt_id": 36,
+                "test_case_id": 1,
+                "execution_ms": null,
+                "created_at": "2022-03-25T09:53:28.105193Z",
+                "status": "PENDING",
+                "is_visible": false
+            },
+            {
+                "id": 16,
+                "attempt_id": 36,
+                "test_case_id": 2,
+                "execution_ms": 0,
+                "expected_result": "{ some_serialized_JSON_string_of_results }",
+                "actual_result": "{ some_serialized_JSON_string_of_results }",
+                "created_at": "2022-03-25T09:53:27.935698Z",
+                "status": "PENDING",
+                "is_visible": true
+            }
+        ]
     }
 }
 ```
@@ -257,7 +274,21 @@ Error responses will return:
                 "created_at": "2022-03-17T00:00:00Z"
             }
         ],
-        "created_at": "2022-03-17T08:21:21.002851Z"
+        "created_at": "2022-03-17T08:21:21.002851Z",
+        "top_attempts": [
+            {
+                "test_case_id": 23,
+                "user_full_name": "Dexter Fong",
+                "completion_time_ms": 100,
+                "time_of_attempt": "2022-03-27T11:21:57.673975Z"
+            },
+            {
+                "test_case_id": 24,
+                "user_full_name": "Yu Yisong",
+                "completion_time_ms": 50,
+                "time_of_attempt": "2022-03-27T11:32:51.032865Z"
+            }
+        ]
     }
 }
 ```
@@ -340,13 +371,11 @@ Error responses will return:
     "test_cases": [
         {
             "id": 1,
-            "data": "<INSERT ...>",
-            "is_visible": true
+            "data": "<INSERT ...>"
         },
         {
             "id": 2,
-            "data": "<INSERT ...>",
-            "is_visible": false
+            "data": "<INSERT ...>"
         }
     ],
 }
@@ -384,7 +413,6 @@ Error responses will return:
     "test_case_id": 2,
     "status": "COMPLETED", //or 'FAILED'
     "execution_ms": 100,
-    "score": 100,
     "expected_result": "", //JSON serialized string
     "actual_result": "", //JSON serialized string
     "error": "Some error message" //optional

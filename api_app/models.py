@@ -3,9 +3,18 @@ from django.utils.translation import gettext_lazy as _
 
 
 class User(models.Model):
+    class Role(models.TextChoices):
+        PROFESSOR = 'PROF', _('PROFESSOR')
+        STUDENT = 'STUD', _('STUDENT')
+
     id = models.BigAutoField(primary_key=True)
     email = models.CharField(max_length=255)
     full_name = models.CharField(max_length=255)
+    role = models.CharField(
+        max_length=10,
+        choices=Role.choices,
+        default=Role.STUDENT,
+    )
     unsafe_password = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -65,7 +74,6 @@ class AttemptedCase(models.Model):
         default=Status.PENDING,
     )
     execution_ms = models.PositiveIntegerField(null=True)
-    score = models.PositiveIntegerField(null=True)
     expected_result = models.TextField(null=True)
     actual_result = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)

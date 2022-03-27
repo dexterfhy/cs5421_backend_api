@@ -28,8 +28,7 @@ def publish_job_init(challenge, test_cases):
             "times_to_run": challenge.times_to_run,
             "test_cases": list(map(lambda test_case: {
                 "id": test_case.id,
-                "data": test_case.data,
-                "is_visible": test_case.is_visible
+                "data": test_case.data
             }, test_cases)),
         },
         key=str(challenge.id)
