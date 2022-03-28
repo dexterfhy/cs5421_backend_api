@@ -297,7 +297,6 @@ Error responses will return:
 ```
 {
     "user_id": 1,
-    "name": "Fabian Pascal",
     "description": "Some description", //Optional
     "expires_at": "2022-06-01T12:00",
     "times_to_run": 10
@@ -439,7 +438,6 @@ Error responses will return:
 ```
 {
     "challenge_id": 3,
-    "challenge_name": "Fabian Pascal",
     "expires_at": "2022-06-01T12:00:00+00:00",
     "times_to_run": 10
 }

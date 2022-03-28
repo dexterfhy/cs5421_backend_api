@@ -40,7 +40,6 @@ def publish_job_update(challenge):
         job_init_topic,
         {
             "challenge_id": challenge.id,
-            "challenge_name": challenge.name,
             "expires_at": challenge.expires_at.isoformat(),
             "times_to_run": challenge.times_to_run,
         },

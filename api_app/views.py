@@ -146,7 +146,6 @@ def get_or_update_challenge(request, challenge_id=None):
                     return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
                 data = dict({
-                    "name": request.data["name"] or challenge.name,
                     "description": request.data["description"] or challenge.description,
                     "expires_at": request.data["expires_at"] or challenge.expires_at,
                     "times_to_run": request.data["times_to_run"] or challenge.times_to_run,
