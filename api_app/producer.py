@@ -35,6 +35,19 @@ def publish_job_init(challenge, test_cases):
     )
 
 
+def publish_job_update(challenge):
+    producer.send(
+        job_init_topic,
+        {
+            "challenge_id": challenge.id,
+            "challenge_name": challenge.name,
+            "expires_at": challenge.expires_at.isoformat(),
+            "times_to_run": challenge.times_to_run,
+        },
+        key=str(challenge.id)
+    )
+
+
 def publish_job_attempt(attempt, challenge):
     producer.send(
         job_attempt_slow_topic if challenge.type == Challenge.Type.SLOWEST_EXECUTION else job_attempt_fast_topic,

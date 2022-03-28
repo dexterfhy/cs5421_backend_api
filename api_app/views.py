@@ -1,5 +1,4 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max, Min
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 from rest_framework import status
@@ -7,7 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import User, Attempt, Challenge, TestCase, AttemptedCase
-from .producer import publish_job_init, publish_job_attempt
+from .producer import publish_job_init, publish_job_attempt, publish_job_update
 from .serializers import UserSerializer, AttemptSerializer, ChallengeSerializer, TestCaseSerializer, \
     AttemptedCaseSerializer
 
@@ -129,13 +128,37 @@ def fetch_challenges_or_create_new(request):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
-def get_challenge(request, challenge_id=None):
+@api_view(["GET", "PATCH"])
+def get_or_update_challenge(request, challenge_id=None):
     if challenge_id:
         try:
             challenge = Challenge.objects.get(id=challenge_id)
-            serializer = ChallengeSerializer(challenge)
-            return Response({"status": "success", "data": build_top_challenge(serializer.data)}, status=status.HTTP_200_OK)
+
+            if request.method == 'GET':
+                serializer = ChallengeSerializer(challenge)
+                return Response({"status": "success", "data": build_top_challenge(serializer.data)}, status=status.HTTP_200_OK)
+            else:
+                try:
+                    if not User.objects.get(id=request.data["user_id"]).role == "PROF":
+                        return Response({"status": "error", "message": "Only professors may create challenges."},
+                                        status=status.HTTP_400_BAD_REQUEST)
+                except ObjectDoesNotExist:
+                    return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                data = dict({
+                    "name": request.data["name"] or challenge.name,
+                    "description": request.data["description"] or challenge.description,
+                    "expires_at": request.data["expires_at"] or challenge.expires_at,
+                    "times_to_run": request.data["times_to_run"] or challenge.times_to_run,
+                })
+                serializer = ChallengeSerializer(challenge, data=data, partial=True)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    publish_job_update(challenge)
+                    return Response({"status": "success", "data": build_challenge(serializer.data)}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_404_NOT_FOUND)
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "Challenge not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -195,6 +218,25 @@ def attempt_challenge(request):
 
     return Response({"status": "error", "message": "User ID or challenge ID not specified"},
                     status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def invalidate_attempt(request, attempt_id=None):
+    if attempt_id:
+        try:
+            for attempted_case in AttemptedCase.objects.filter(attempt_id=attempt_id):
+                serializer = AttemptedCaseSerializer(attempted_case, data=dict({'status': 'INVALIDATED'}), partial=True)
+
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    print("Unable to invalidate {}".format(attempted_case))
+
+            return Response({"status": "success", "data": "Invalidated attempt {}".format(attempt_id)}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"status": "error", "message": "Attempt not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({"status": "error", "message": "Attempt ID not specified"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def build_challenge(challenge_data):

@@ -293,6 +293,50 @@ Error responses will return:
 }
 ```
   
+- `PATCH challenges/:challenge_id` - Updates `challenge` by challenge ID
+```
+{
+    "user_id": 1,
+    "name": "Fabian Pascal",
+    "description": "Some description", //Optional
+    "expires_at": "2022-06-01T12:00",
+    "times_to_run": 10
+}
+...
+{
+    "status": "success",
+    "data": {
+        "id": 2,
+        "created_user_id": 1,
+        "name": "Fabian Pascal",
+        "description": "Some description",
+        "type": "FE",
+        "init": "<CREATE DATABASE...>",
+        "init_at": "2022-03-25T17:30:28.933638Z",
+        "init_errors": null,
+        "solution": "<SELECT ...>",
+        "times_to_run": 10,
+        "test_cases": [
+            {
+                "id": 1,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": true,
+                "created_at": "2022-03-17T00:00:00Z"
+            },
+            {
+                "id": 2,
+                "challenge_id": 2,
+                "data": "<INSERT ...>",
+                "is_visible": false,
+                "created_at": "2022-03-17T00:00:00Z"
+            }
+        ],
+        "created_at": "2022-03-17T08:21:21.002851Z"
+    }
+}
+```
+  
 - `GET challenges-by-user/:challenge_id` - Gets `challenge` by user ID
 ```
 {
@@ -349,9 +393,18 @@ Error responses will return:
 }
 ```
 
+- `POST attempts/:attempt_id/invalidate` - Updates existing `attempt` with status `INVALIDATED`
+```
+{
+    "status": "success",
+    "data": "Invalidated attempt 32"
+}
+```
+
 ### Kafka Specs
 
 - `backend-api` publishes `JobInitEvent` to `backend-job` via `KAFKA_JOB_INIT_TOPIC`
+- `backend-api` publishes `JobInitUpdateEvent` to `backend-job` via `KAFKA_JOB_INIT_TOPIC`
 - `backend-api` publishes `JobAttemptEvent` --> `backend-job` via `KAFKA_JOB_ATTEMPT_FAST_TOPIC` or `KAFKA_JOB_ATTEMPT_SLOW_TOPIC`
 - `backend-job` publishes `JobInitCompletionEvent` to `backend-api` via `KAFKA_JOB_INIT_COMPLETION_TOPIC`
 - `backend-job` publishes `JobAttemptCompletionEvent` to `backend-api` via `KAFKA_JOB_ATTEMPT_COMPLETION_TOPIC` (for both fast and slow attempts)
@@ -381,6 +434,17 @@ Error responses will return:
 }
 ```
 
+- `JobInitUpdateEvent`
+
+```
+{
+    "challenge_id": 3,
+    "challenge_name": "Fabian Pascal",
+    "expires_at": "2022-06-01T12:00:00+00:00",
+    "times_to_run": 10
+}
+```
+
 - `JobAttemptEvent`
 
 ```
@@ -398,7 +462,8 @@ Error responses will return:
 ```
 {
     "challenge_id": 3,
-    "status": "COMPLETED", //or 'FAILED'
+    "status": "COMPLETED", //or 'FAILED',
+    "expected_result": "", //JSON serialized string
     "error": "Some error message" //optional
 }
 ```
@@ -413,7 +478,6 @@ Error responses will return:
     "test_case_id": 2,
     "status": "COMPLETED", //or 'FAILED'
     "execution_ms": 100,
-    "expected_result": "", //JSON serialized string
     "actual_result": "", //JSON serialized string
     "error": "Some error message" //optional
 }

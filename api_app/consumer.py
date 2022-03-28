@@ -28,9 +28,13 @@ def handle_job_completion_events():
             try:
                 challenge = Challenge.objects.get(id=msg.value['challenge_id'])
 
-                data = dict({'init_errors': msg.value['error'] or 'Unknown error'}) \
-                    if 'status' in msg.value and msg.value['status'] == 'FAILED' \
-                    else dict({'init_at': datetime.now()})
+                data = dict({
+                        'init_errors': msg.value['error'] or 'Unknown error'
+                    }) if 'status' in msg.value and msg.value['status'] == 'FAILED' \
+                    else dict({
+                        'init_at': datetime.now(),
+                        'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
+                    })
                 serializer = ChallengeSerializer(challenge, data=data, partial=True)
 
                 if serializer.is_valid():
@@ -47,7 +51,6 @@ def handle_job_completion_events():
                 data = dict({
                     'status': msg.value['status'] if 'status' in msg.value else 'PENDING',
                     'execution_ms': msg.value['execution_ms'] if 'execution_ms' in msg.value else 0,
-                    'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}',
                     'actual_result': msg.value['actual_result'] if 'actual_result' in msg.value else '{}'
                 })
                 serializer = AttemptedCaseSerializer(attempted_case, data=data, partial=True)

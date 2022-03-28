@@ -64,6 +64,7 @@ class AttemptedCase(models.Model):
         COMPLETED = 'COMPLETED', _('COMPLETED')
         FAILED = 'FAILED', _('FAILED')
         TIMED_OUT = 'TIMED_OUT', _('TIMED_OUT')
+        INVALIDATED = 'INVALIDATED', _('INVALIDATED')
 
     id = models.BigAutoField(primary_key=True)
     attempt_id = models.PositiveIntegerField()
