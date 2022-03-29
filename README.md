@@ -68,7 +68,15 @@ Error responses will return:
 ```
 {
     "status": "error",
-    "mesage": "Some error message"
+    "mesage": "Some error message",
+    "validation" { //Some nested validation object
+       "email":[
+          "This field may not be blank."
+       ],
+       "unsafe_password":[
+          "This field may not be blank."
+       ]
+    }
 }
 ```
 
@@ -450,7 +458,6 @@ Error responses will return:
     "attempt_id": 1,
     "user_id": 2,
     "challenge_id": 3,
-    "challenge_name": "Fabian Pascal",
     "query": "<SELECT ...>"
 }
 ```
@@ -460,6 +467,7 @@ Error responses will return:
 ```
 {
     "challenge_id": 3,
+    "test_case_id": 2,
     "status": "COMPLETED", //or 'FAILED',
     "expected_result": "", //JSON serialized string
     "error": "Some error message" //optional
@@ -474,7 +482,7 @@ Error responses will return:
     "user_id": 2,
     "challenge_id": 3,
     "test_case_id": 2,
-    "status": "COMPLETED", //or 'FAILED'
+    "status": "CORRECT", //or 'WRONG', 'FAILED', 'TIMED_OUT'
     "execution_ms": 100,
     "actual_result": "", //JSON serialized string
     "error": "Some error message" //optional

@@ -54,7 +54,6 @@ def publish_job_attempt(attempt, challenge):
             "attempt_id": attempt['id'],
             "user_id": attempt['user_id'],
             "challenge_id": challenge.id,
-            "challenge_name": challenge.name,
             "query": attempt['query']
         },
         key=str(challenge.id)

@@ -28,7 +28,13 @@ def register(request):
             serializer.save()
             return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
     else:
-        return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {
+                "status": "error",
+                "message": "Invalid request data",
+                "validation": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 @api_view(["POST"])
@@ -124,8 +130,13 @@ def fetch_challenges_or_create_new(request):
             return Response({"status": "success", "data": build_challenge(challenge_serializer.data)},
                             status=status.HTTP_200_OK)
         else:
-            return Response({"status": "error", "message": challenge_serializer.errors},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "status": "error",
+                    "message": "Invalid request data",
+                    "validation": challenge_serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @api_view(["GET", "PATCH"])
@@ -136,7 +147,8 @@ def get_or_update_challenge(request, challenge_id=None):
 
             if request.method == 'GET':
                 serializer = ChallengeSerializer(challenge)
-                return Response({"status": "success", "data": build_top_challenge(serializer.data)}, status=status.HTTP_200_OK)
+                return Response({"status": "success", "data": build_top_challenge(serializer.data)},
+                                status=status.HTTP_200_OK)
             else:
                 try:
                     if not User.objects.get(id=request.data["user_id"]).role == "PROF":
@@ -155,9 +167,16 @@ def get_or_update_challenge(request, challenge_id=None):
                 if serializer.is_valid():
                     serializer.save()
                     publish_job_update(challenge)
-                    return Response({"status": "success", "data": build_challenge(serializer.data)}, status=status.HTTP_200_OK)
+                    return Response({"status": "success", "data": build_challenge(serializer.data)},
+                                    status=status.HTTP_200_OK)
                 else:
-                    return Response({"status": "error", "message": serializer.errors}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": "Invalid request data",
+                            "validation": serializer.errors
+                        }, status=status.HTTP_400_BAD_REQUEST
+                    )
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "Challenge not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -209,8 +228,13 @@ def attempt_challenge(request):
                 publish_job_attempt(attempt_serializer.data, challenge)
                 return Response({"status": "success", "data": attempt_serializer.data}, status=status.HTTP_200_OK)
             else:
-                return Response({"status": "error", "message": attempt_serializer.errors},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "Invalid request data",
+                        "validation": attempt_serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST
+                )
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "User or challenge not found"},
                             status=status.HTTP_404_NOT_FOUND)
@@ -231,7 +255,8 @@ def invalidate_attempt(request, attempt_id=None):
                 else:
                     print("Unable to invalidate {}".format(attempted_case))
 
-            return Response({"status": "success", "data": "Invalidated attempt {}".format(attempt_id)}, status=status.HTTP_200_OK)
+            return Response({"status": "success", "data": "Invalidated attempt {}".format(attempt_id)},
+                            status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({"status": "error", "message": "Attempt not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -254,7 +279,7 @@ def build_top_challenge(challenge_data):
     hidden_test_case_ids = list(map(lambda x: x.id, filter(lambda x: not x.is_visible, test_cases)))
 
     challenge_data["top_attempts"] = list(map(build_challenge_attempt, AttemptedCase.objects
-                                              .filter(status='COMPLETED', test_case_id__in=hidden_test_case_ids)
+                                              .filter(status='CORRECT', test_case_id__in=hidden_test_case_ids)
                                               .order_by('test_case_id',
                                                         '-execution_ms'
                                                         if challenge_data['type'] == 'SE' else 'execution_ms',

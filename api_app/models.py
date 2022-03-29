@@ -47,6 +47,7 @@ class TestCase(models.Model):
     challenge_id = models.PositiveIntegerField()
     data = models.TextField()
     is_visible = models.BooleanField()
+    expected_result = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -61,7 +62,8 @@ class Attempt(models.Model):
 class AttemptedCase(models.Model):
     class Status(models.TextChoices):
         PENDING = 'PENDING', _('PENDING')
-        COMPLETED = 'COMPLETED', _('COMPLETED')
+        CORRECT = 'CORRECT', _('CORRECT')
+        WRONG = 'WRONG', _('WRONG')
         FAILED = 'FAILED', _('FAILED')
         TIMED_OUT = 'TIMED_OUT', _('TIMED_OUT')
         INVALIDATED = 'INVALIDATED', _('INVALIDATED')
@@ -75,6 +77,5 @@ class AttemptedCase(models.Model):
         default=Status.PENDING,
     )
     execution_ms = models.PositiveIntegerField(null=True)
-    expected_result = models.TextField(null=True)
     actual_result = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
