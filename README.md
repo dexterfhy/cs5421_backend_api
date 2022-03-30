@@ -264,6 +264,7 @@ Error responses will return:
         "init": "<CREATE DATABASE...>",
         "init_at": "2022-03-25T17:30:28.933638Z",
         "init_errors": null,
+        "expires_at": "2022-06-01T12:00:00Z",
         "solution": "<SELECT ...>",
         "times_to_run": 10,
         "test_cases": [
@@ -344,39 +345,42 @@ Error responses will return:
 }
 ```
   
-- `GET challenges-by-user/:challenge_id` - Gets `challenge` by user ID
+- `GET challenges-by-user/:user_id` - Gets `challenge` by user ID
 ```
 {
     "status": "success",
-    "data": {
-        "id": 2,
-        "created_user_id": 1,
-        "name": "Fabian Pascal",
-        "description": "Some description",
-        "type": "FE",
-        "init": "<CREATE DATABASE...>",
-        "init_at": "2022-03-25T17:30:28.933638Z",
-        "init_errors": null,
-        "solution": "<SELECT ...>",
-        "times_to_run": 10,
-        "test_cases": [
-            {
-                "id": 1,
-                "challenge_id": 2,
-                "data": "<INSERT ...>",
-                "is_visible": true,
-                "created_at": "2022-03-17T00:00:00Z"
-            },
-            {
-                "id": 2,
-                "challenge_id": 2,
-                "data": "<INSERT ...>",
-                "is_visible": false,
-                "created_at": "2022-03-17T00:00:00Z"
-            }
-        ],
-        "created_at": "2022-03-17T08:21:21.002851Z"
-    }
+    "data": [
+        {
+            "id": 2,
+            "created_user_id": 1,
+            "name": "Fabian Pascal",
+            "description": "Some description",
+            "type": "FE",
+            "init": "<CREATE DATABASE...>",
+            "init_at": "2022-03-25T17:30:28.933638Z",
+            "init_errors": null,
+            "expires_at": "2022-06-01T12:00:00Z",
+            "solution": "<SELECT ...>",
+            "times_to_run": 10,
+            "test_cases": [
+                {
+                    "id": 1,
+                    "challenge_id": 2,
+                    "data": "<INSERT ...>",
+                    "is_visible": true,
+                    "created_at": "2022-03-17T00:00:00Z"
+                },
+                {
+                    "id": 2,
+                    "challenge_id": 2,
+                    "data": "<INSERT ...>",
+                    "is_visible": false,
+                    "created_at": "2022-03-17T00:00:00Z"
+                }
+            ],
+            "created_at": "2022-03-17T08:21:21.002851Z"
+        }
+    ]
 }
 ```
 
