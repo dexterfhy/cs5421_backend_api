@@ -81,6 +81,17 @@ def get_challenge_attempt(request, user_id=None, attempt_id=None):
                     status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["GET"])
+def get_all_challenge_attempts(request, user_id=None):
+    if user_id:
+        attempts = list(map(build_attempt,
+                            map(lambda x: AttemptSerializer(x).data, Attempt.objects.filter(user_id=user_id))))
+        return Response({"status": "success", "data": attempts}, status=status.HTTP_200_OK)
+
+    return Response({"status": "error", "message": "User ID or attempt ID not specified"},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(["GET", "POST"])
 def fetch_challenges_or_create_new(request):
     if request.method == 'GET':
@@ -290,7 +301,7 @@ def build_top_challenge(challenge_data):
 
 
 def build_attempt(attempt_data):
-    attempt_data["attempts"] = list(map(
+    attempt_data["test_cases"] = list(map(
         lambda x: build_attempted_case(AttemptedCaseSerializer(x).data),
         list(AttemptedCase.objects.filter(attempt_id=attempt_data["id"]))
     ))

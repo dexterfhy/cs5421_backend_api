@@ -146,10 +146,10 @@ Error responses will return:
         "challenge_id": 1,
         "query": "<SELECT statements...>",
         "created_at": "2022-03-25T09:53:27.764581Z",
-        "attempts": [
+        "test_cases": [
             {
                 "id": 17,
-                "attempt_id": 36,
+                "attempt_id": 23, //References outer id
                 "test_case_id": 1,
                 "execution_ms": null,
                 "created_at": "2022-03-25T09:53:28.105193Z",
@@ -158,7 +158,7 @@ Error responses will return:
             },
             {
                 "id": 16,
-                "attempt_id": 36,
+                "attempt_id": 23, //References outer id
                 "test_case_id": 2,
                 "execution_ms": 0,
                 "expected_result": "{ some_serialized_JSON_string_of_results }",
@@ -169,6 +169,46 @@ Error responses will return:
             }
         ]
     }
+}
+```
+
+- `GET users/:user_id/attempts` - Gets all `attempt`s by user ID
+
+```
+{
+    "status": "success",
+    "data": [
+        {
+            "id": 23,
+            "user_id": 3,
+            "challenge_id": 1,
+            "query": "<SELECT statements...>",
+            "created_at": "2022-03-25T09:53:27.764581Z",
+            "test_cases": [
+                {
+                    "id": 17,
+                    "attempt_id": 23, //References outer id
+                    "test_case_id": 1,
+                    "execution_ms": null,
+                    "created_at": "2022-03-25T09:53:28.105193Z",
+                    "status": "PENDING",
+                    "is_visible": false
+                },
+                {
+                    "id": 16,
+                    "attempt_id": 23, //References outer id
+                    "test_case_id": 2,
+                    "execution_ms": 0,
+                    "expected_result": "{ some_serialized_JSON_string_of_results }",
+                    "actual_result": "{ some_serialized_JSON_string_of_results }",
+                    "created_at": "2022-03-25T09:53:27.935698Z",
+                    "status": "PENDING",
+                    "is_visible": true
+                }
+            ]
+        },
+        ...
+    ]
 }
 ```
 

@@ -24,6 +24,7 @@ urlpatterns = [
     path('login', views.login),
     path('users/<int:user_id>', views.get_user),
     path('users/<int:user_id>/attempts/<int:attempt_id>', views.get_challenge_attempt),
+    path('users/<int:user_id>/attempts', views.get_all_challenge_attempts),
     path('challenges', views.fetch_challenges_or_create_new),
     path('challenges/<int:challenge_id>', views.get_or_update_challenge),
     path('challenges-by-user/<int:user_id>', views.get_challenge_by_user),
