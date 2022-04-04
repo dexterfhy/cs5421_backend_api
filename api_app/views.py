@@ -301,6 +301,7 @@ def build_top_challenge(challenge_data):
 
 
 def build_attempt(attempt_data):
+    attempt_data["challenge_name"] = Challenge.objects.get(id=attempt_data["challenge_id"]).name
     attempt_data["test_cases"] = list(map(
         lambda x: build_attempted_case(AttemptedCaseSerializer(x).data),
         list(AttemptedCase.objects.filter(attempt_id=attempt_data["id"]))
