@@ -283,21 +283,56 @@ def build_challenge(challenge_data):
 
 
 def build_top_challenge(challenge_data):
-    test_cases = list(TestCase.objects.filter(challenge_id=challenge_data["id"]))
+    challenge_id = challenge_data["id"]
+    challenge_type = challenge_data['type']
+
+    test_cases = list(TestCase.objects.filter(challenge_id=challenge_id))
 
     challenge_data["test_cases"] = list(map(lambda x: TestCaseSerializer(x).data, test_cases))
 
     hidden_test_case_ids = list(map(lambda x: x.id, filter(lambda x: not x.is_visible, test_cases)))
 
-    challenge_data["top_attempts"] = list(map(build_challenge_attempt, AttemptedCase.objects
-                                              .filter(status='CORRECT', test_case_id__in=hidden_test_case_ids)
-                                              .order_by('test_case_id',
-                                                        '-execution_ms'
-                                                        if challenge_data['type'] == 'SE' else 'execution_ms',
-                                                        '-created_at')
-                                              .distinct('test_case_id')))
+    ranked_attempts = list(
+        map(build_challenge_attempt,
+            filter(lambda user_result: 'average_execution_time' in user_result['result'],
+                   map(lambda user_id: {
+                       'user_id': user_id,
+                       'result': get_top_average_execution_time_for_user_and_challenge(
+                           user_id,
+                           challenge_id,
+                           challenge_type,
+                           hidden_test_case_ids
+                       )
+                   }, set(map(lambda attempt: attempt.user_id, Attempt.objects.filter(challenge_id=challenge_id))))))
+    )
+    ranked_attempts.sort(key=lambda challenge_attempt: challenge_attempt['average_execution_time'],
+                         reverse=challenge_type == 'SE')
+
+    challenge_data["top_attempts"] = ranked_attempts
 
     return challenge_data
+
+
+def get_top_average_execution_time_for_user_and_challenge(user_id, challenge_id, challenge_type, hidden_test_case_ids):
+    execution_times = list(map(
+        lambda attempt_id: {
+            'attempt': Attempt.objects.get(id=attempt_id),
+            # Calculate average execution time for all invisible test cases
+            'average_execution_time': sum(map(lambda attempted_case: attempted_case.execution_ms,
+                                              AttemptedCase.objects.filter(attempt_id=attempt_id,
+                                                                           test_case_id__in=hidden_test_case_ids))
+                                          ) / len(hidden_test_case_ids)
+        },
+        filter(lambda attempt_id:
+               # Filter only attempts where user scored CORRECT for all test cases
+               all(attempted_case.status == 'CORRECT' for attempted_case in
+                   AttemptedCase.objects.filter(attempt_id=attempt_id)),
+               # Get all attempts for user and challenge
+               map(lambda x: x.id,
+                   Attempt.objects.filter(user_id=user_id, challenge_id=challenge_id)))))
+    execution_times.sort(key=lambda result: result['average_execution_time'], reverse=challenge_type == 'SE')
+
+    return next(iter(execution_times)) or {}
 
 
 def build_attempt(attempt_data):
@@ -319,10 +354,14 @@ def build_attempted_case(attempted_case_data):
     return attempted_case_data
 
 
-def build_challenge_attempt(attempted_case):
+def build_challenge_attempt(user_result):
     return dict({
-        'test_case_id': attempted_case.test_case_id,
-        'user_full_name': User.objects.get(id=Attempt.objects.get(id=attempted_case.attempt_id).user_id).full_name,
-        'completion_time_ms': attempted_case.execution_ms,
-        'time_of_attempt': attempted_case.created_at
+        'attempt_id': user_result['result']['attempt'].id,
+        'user_full_name': User.objects.get(id=user_result['user_id']).full_name,
+        'average_execution_time': user_result['result']['average_execution_time'],
+        'time_of_attempt': user_result['result']['attempt'].created_at
     })
+
+
+def flatten(t):
+    return [item for sublist in t for item in sublist]

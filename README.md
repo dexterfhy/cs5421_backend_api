@@ -144,6 +144,7 @@ Error responses will return:
         "id": 23,
         "user_id": 3,
         "challenge_id": 1,
+        "challenge_name": "Fabian Pascal",
         "query": "<SELECT statements...>",
         "created_at": "2022-03-25T09:53:27.764581Z",
         "test_cases": [
@@ -182,6 +183,7 @@ Error responses will return:
             "id": 23,
             "user_id": 3,
             "challenge_id": 1,
+            "challenge_name": "Fabian Pascal",
             "query": "<SELECT statements...>",
             "created_at": "2022-03-25T09:53:27.764581Z",
             "test_cases": [
@@ -326,16 +328,16 @@ Error responses will return:
         "created_at": "2022-03-17T08:21:21.002851Z",
         "top_attempts": [
             {
-                "test_case_id": 23,
+                "attempt_id": 36,
                 "user_full_name": "Dexter Fong",
-                "completion_time_ms": 100,
-                "time_of_attempt": "2022-03-27T11:21:57.673975Z"
+                "average_execution_time": 16.666666666666668,
+                "time_of_attempt": "2022-03-25T09:53:27.764581Z"
             },
             {
-                "test_case_id": 24,
-                "user_full_name": "Yu Yisong",
-                "completion_time_ms": 50,
-                "time_of_attempt": "2022-03-27T11:32:51.032865Z"
+                "attempt_id": 35,
+                "user_full_name": "Yisong",
+                "average_execution_time": 533.3333333333334,
+                "time_of_attempt": "2022-03-25T09:39:13.076470Z"
             }
         ]
     }
