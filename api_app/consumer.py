@@ -61,6 +61,8 @@ def process_job_init_completion(msg):
             print("Invalid fields for updating test case {0} with job completion event {1}".format(test_case, msg))
     except ObjectDoesNotExist:
         print("Unable to update challenge or test case with job completion event {0}".format(msg))
+    except Exception as e:
+        print("Unknown error: {}".format(e))
 
 
 def process_job_attempt_completion(msg):
@@ -77,6 +79,8 @@ def process_job_attempt_completion(msg):
                 update_attempted_case(msg, attempted_case)
     except ObjectDoesNotExist:
         print("Unable to update attempt with job completion event {0}".format(msg))
+    except Exception as e:
+        print("Unknown error: {}".format(e))
 
 
 def update_attempted_case(msg, attempted_case):
