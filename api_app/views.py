@@ -100,12 +100,12 @@ def fetch_challenges_or_create_new(request):
                                      map(lambda x: ChallengeSerializer(x).data, list(Challenge.objects.all())))))
         return Response({"status": "success", "data": challenges}, status=status.HTTP_200_OK)
     else:
-        try:
-            if not User.objects.get(id=request.data["user_id"]).role == 'professor':
-                return Response({"status": "error", "message": "Only professors may create challenges."},
-                                status=status.HTTP_400_BAD_REQUEST)
-        except ObjectDoesNotExist:
-            return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        # try:
+        #     if not User.objects.get(id=request.data["user_id"]).role == 'professor':
+        #         return Response({"status": "error", "message": "Only professors may create challenges."},
+        #                         status=status.HTTP_400_BAD_REQUEST)
+        # except ObjectDoesNotExist:
+        #     return Response({"status": "error", "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         challenge_serializer = ChallengeSerializer(data=dict(
             {
