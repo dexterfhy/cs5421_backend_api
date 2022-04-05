@@ -101,7 +101,7 @@ def fetch_challenges_or_create_new(request):
         return Response({"status": "success", "data": challenges}, status=status.HTTP_200_OK)
     else:
         try:
-            if not User.objects.get(id=request.data["user_id"]).role == "PROF":
+            if not User.objects.get(id=request.data["user_id"]).role == 'professor':
                 return Response({"status": "error", "message": "Only professors may create challenges."},
                                 status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
@@ -162,7 +162,7 @@ def get_or_update_challenge(request, challenge_id=None):
                                 status=status.HTTP_200_OK)
             else:
                 try:
-                    if not User.objects.get(id=request.data["user_id"]).role == "PROF":
+                    if not User.objects.get(id=request.data["user_id"]).role == 'professor':
                         return Response({"status": "error", "message": "Only professors may create challenges."},
                                         status=status.HTTP_400_BAD_REQUEST)
                 except ObjectDoesNotExist:
@@ -321,7 +321,7 @@ def get_top_average_execution_time_for_user_and_challenge(user_id, challenge_id,
             'average_execution_time': sum(map(lambda attempted_case: attempted_case.execution_ms,
                                               AttemptedCase.objects.filter(attempt_id=attempt_id,
                                                                            test_case_id__in=hidden_test_case_ids))
-                                          ) / len(hidden_test_case_ids)
+                                          ) / len(hidden_test_case_ids) if len(hidden_test_case_ids) > 0 else 1
         },
         filter(lambda attempt_id:
                # Filter only attempts where user scored CORRECT for all test cases
