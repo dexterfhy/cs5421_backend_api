@@ -6,7 +6,7 @@ from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from kafka import KafkaConsumer
 
-from api_app.models import AttemptedCase, Challenge
+from api_app.models import AttemptedCase, Challenge, TestCase
 from api_app.serializers import AttemptedCaseSerializer, ChallengeSerializer, TestCaseSerializer
 
 job_init_completion_topic = os.getenv('KAFKA_JOB_INIT_COMPLETION_TOPIC')
@@ -48,7 +48,8 @@ def process_job_init_completion(msg):
         else:
             print("Invalid fields for updating challenge {0} with job completion event {1}".format(challenge, msg))
 
-        for attempted_case in AttemptedCase.objects.filter(challenge_id=challenge.id):
+        for test_case in TestCase.objects.filter(challenge_id=challenge.id):
+            attempted_case = AttemptedCase.objects.get(test_case_id=test_case.id)
             attempted_case_data = dict({
                 'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
             })
