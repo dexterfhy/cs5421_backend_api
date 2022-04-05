@@ -48,7 +48,7 @@ def process_job_init_completion(msg):
         else:
             print("Invalid fields for updating challenge {0} with job completion event {1}".format(challenge, msg))
 
-        for attempted_case in AttemptedCaseSerializer.objects.filter(challenge_id=challenge.id):
+        for attempted_case in AttemptedCase.objects.filter(challenge_id=challenge.id):
             attempted_case_data = dict({
                 'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
             })
