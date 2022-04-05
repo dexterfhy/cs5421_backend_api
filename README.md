@@ -513,7 +513,6 @@ Error responses will return:
 ```
 {
     "challenge_id": 3,
-    "test_case_id": 2,
     "status": "COMPLETED", //or 'FAILED',
     "expected_result": "", //JSON serialized string
     "error": "Some error message" //optional

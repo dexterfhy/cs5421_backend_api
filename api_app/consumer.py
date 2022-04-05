@@ -48,17 +48,16 @@ def process_job_init_completion(msg):
         else:
             print("Invalid fields for updating challenge {0} with job completion event {1}".format(challenge, msg))
 
-        test_case = TestCaseSerializer.objects.get(id=challenge.test_case_id)
+        for test_case in TestCaseSerializer.objects.filter(challenge_id=challenge.id):
+            test_case_data = dict({
+                'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
+            })
+            test_case_serializer = TestCaseSerializer(test_case, data=test_case_data, partial=True)
 
-        test_case_data = dict({
-            'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
-        })
-        test_case_serializer = TestCaseSerializer(test_case, data=test_case_data, partial=True)
-
-        if test_case_serializer.is_valid():
-            test_case_serializer.save()
-        else:
-            print("Invalid fields for updating test case {0} with job completion event {1}".format(test_case, msg))
+            if test_case_serializer.is_valid():
+                test_case_serializer.save()
+            else:
+                print("Invalid fields for updating test case {0} with job completion event {1}".format(test_case, msg))
     except ObjectDoesNotExist:
         print("Unable to update challenge or test case with job completion event {0}".format(msg))
     except Exception as e:
