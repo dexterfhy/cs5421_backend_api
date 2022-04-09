@@ -290,7 +290,7 @@ def build_top_challenge(challenge_data):
 
     challenge_data["test_cases"] = list(map(lambda x: TestCaseSerializer(x).data, test_cases))
 
-    hidden_test_case_ids = list(map(lambda x: x.id, filter(lambda x: not x.is_visible, test_cases)))
+    all_test_case_ids = list(map(lambda x: x.id, test_cases))
 
     ranked_attempts = list(
         map(build_challenge_attempt,
@@ -301,7 +301,7 @@ def build_top_challenge(challenge_data):
                            user_id,
                            challenge_id,
                            challenge_type,
-                           hidden_test_case_ids
+                           all_test_case_ids
                        )
                    }, set(map(lambda attempt: attempt.user_id, Attempt.objects.filter(challenge_id=challenge_id))))))
     )
@@ -313,15 +313,15 @@ def build_top_challenge(challenge_data):
     return challenge_data
 
 
-def get_top_average_execution_time_for_user_and_challenge(user_id, challenge_id, challenge_type, hidden_test_case_ids):
+def get_top_average_execution_time_for_user_and_challenge(user_id, challenge_id, challenge_type, all_test_case_ids):
     execution_times = list(map(
         lambda attempt_id: {
             'attempt': Attempt.objects.get(id=attempt_id),
             # Calculate average execution time for all invisible test cases
             'average_execution_time': sum(map(lambda attempted_case: attempted_case.execution_ms,
                                               AttemptedCase.objects.filter(attempt_id=attempt_id,
-                                                                           test_case_id__in=hidden_test_case_ids))
-                                          ) / len(hidden_test_case_ids) if len(hidden_test_case_ids) > 0 else 1
+                                                                           test_case_id__in=all_test_case_ids))
+                                          ) / len(all_test_case_ids) if len(all_test_case_ids) > 0 else 1
         },
         filter(lambda attempt_id:
                # Filter only attempts where user scored CORRECT for all test cases
