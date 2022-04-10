@@ -307,6 +307,9 @@ def build_top_challenge(challenge_data):
     )
     ranked_attempts.sort(key=lambda challenge_attempt: challenge_attempt['average_execution_time'],
                          reverse=challenge_type == 'SE')
+    ranked_attempts = [
+        add_challenge_attempt_rank(rank + 1, challenge_attempt) for rank, challenge_attempt in enumerate(ranked_attempts)
+    ]
 
     challenge_data["top_attempts"] = ranked_attempts
 
@@ -359,8 +362,14 @@ def build_challenge_attempt(user_result):
         'attempt_id': user_result['result']['attempt'].id,
         'user_full_name': User.objects.get(id=user_result['user_id']).full_name,
         'average_execution_time': user_result['result']['average_execution_time'],
-        'time_of_attempt': user_result['result']['attempt'].created_at
+        'time_of_attempt': user_result['result']['attempt'].created_at,
+        'query': user_result['result']['attempt'].query
     })
+
+
+def add_challenge_attempt_rank(rank, challenge_attempt):
+    challenge_attempt['rank'] = rank
+    return challenge_attempt
 
 
 def flatten(t):
