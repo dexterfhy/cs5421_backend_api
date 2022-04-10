@@ -76,6 +76,6 @@ class AttemptedCase(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
-    execution_ms = models.PositiveIntegerField(null=True)
+    execution_ms = models.FloatField(null=True)
     actual_result = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)

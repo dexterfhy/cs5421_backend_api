@@ -49,16 +49,15 @@ def process_job_init_completion(msg):
             print("Invalid fields for updating challenge {0} with job completion event {1}".format(challenge, msg))
 
         for test_case in TestCase.objects.filter(challenge_id=challenge.id):
-            attempted_case = AttemptedCase.objects.get(test_case_id=test_case.id)
-            attempted_case_data = dict({
-                'expected_result': msg.value['expected_result'] if 'expected_result' in msg.value else '{}'
+            test_case_data = dict({
+                'expected_result': msg.value['expected_results'] if 'expected_results' in msg.value else '{}'
             })
-            attempted_case_serializer = AttemptedCaseSerializer(attempted_case, data=attempted_case_data, partial=True)
+            test_case_serializer = TestCaseSerializer(test_case, data=test_case_data, partial=True)
 
-            if attempted_case_serializer.is_valid():
-                attempted_case_serializer.save()
+            if test_case_serializer.is_valid():
+                test_case_serializer.save()
             else:
-                print("Invalid fields for updating attempted case {0} with job completion event {1}".format(attempted_case, msg))
+                print("Invalid fields for updating test case {0} with job completion event {1}".format(test_case, msg))
     except ObjectDoesNotExist:
         print("Unable to update challenge or test case with job completion event {0}".format(msg))
     except Exception as e:
@@ -87,7 +86,7 @@ def update_attempted_case(msg, attempted_case):
     status = msg.value['status'] if 'status' in msg.value else 'PENDING'
     execution_ms = msg.value['execution_ms'] if 'execution_ms' in msg.value else 0
     if 'CORRECT' == status:
-        test_case = TestCaseSerializer.objects.get(id=msg.value['test_case_id'])
+        test_case = TestCase.objects.get(id=msg.value['test_case_id'])
         actual_result = test_case.expected_result
     else:
         actual_result = msg.value['actual_result'] if 'actual_result' in msg.value else '{}'

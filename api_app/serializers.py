@@ -63,7 +63,7 @@ class AttemptedCaseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     attempt_id = serializers.IntegerField()
     test_case_id = serializers.IntegerField()
-    execution_ms = serializers.IntegerField(required=False)
+    execution_ms = serializers.FloatField(required=False)
     expected_result = serializers.CharField(required=False)
     actual_result = serializers.CharField(required=False)
     created_at = serializers.DateTimeField(required=False)
